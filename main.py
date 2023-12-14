@@ -1,215 +1,78 @@
-import json
-from numpy import argsort
-import openai
 import pandas as pd
-import matplotlib.pyplot as plt 
-import streamlit as st 
-import yfinance as yf 
+import matplotlib.pyplot as plt
+import yfinance as yf
+import streamlit as st
+from textblob import TextBlob
 
-api_key_path = 'd:\\Python Projects\\Python-AI-Projects\\Financial-Stock-Assistant\\Assistant\\API_KEY'
-openai.api_key = open(api_key_path, 'r').read()
-
+# Function to get stock price
 def get_stock_price(ticker):
-    return str(yf.Ticker(ticker).history(period='1y').iloc[-1].Close)
+    return yf.Ticker(ticker).history(period='1d').iloc[-1].Close
 
-def calculate_SMA(ticker, window):
-    data = yf.Ticker(ticker).history(period='1y').Close
-    return str(data.rolling(window=window).mean().iloc[-1])
+# Function to calculate simple moving average (SMA)
+def calculate_sma(data, window):
+    return data.rolling(window=window).mean()
 
-def calculate_EMA(ticker, window):
-    data = yf.Ticker(ticker).history(period='1y').Close
-    return str(data.ewm(span=window, adjust= False).mean().iloc[-1])
+# Function to calculate exponential moving average (EMA)
+def calculate_ema(data, window):
+    return data.ewm(span=window, adjust=False).mean()
 
-def calculate_RSI(ticker):
-    data = yf.Ticker(ticker).history(period='1y').Close
-    delta = data.diff()
-    up = delta.clip(lower=0)
-    down = -1*delta.clip(upper=0)
-    ema_up = up.ewm(com=14-1, adjust=False).mean()
-    ema_down = down.ewm(com=14-1, adjust=False).mean()
-    rs =  ema_up/ema_down
-    return str(100 - (100/ (1+rs)).iloc[-1])
+# Function to calculate relative strength index (RSI)
+def calculate_rsi(data, window=14):
+    delta = data.diff(1)
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
 
-def calculate_MACD(ticker):
-    data = yf.Ticker(ticker).history(period='1y').Close
-    short_EMA = data.ewm(span=12, adjust=False).mean()
-    long_EMA = data.ewm(span=26, adjust=False).mean()
+    avg_gain = gain.rolling(window=window).mean()
+    avg_loss = loss.rolling(window=window).mean()
 
-    MACD = short_EMA - long_EMA 
-    signal = MACD.ewm(span=9, adjust=False).mean()
-    MACD_histogram = MACD - signal
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
 
-    return f'{MACD[-1]}, {signal[-1]}, {MACD_histogram[-1]}'
+# Function to perform sentiment analysis on stock-related tweets
+def analyze_sentiment(ticker):
+    # Placeholder for demo purposes; replace with actual sentiment analysis logic
+    tweets = ["Positive tweet about " + ticker, "Neutral tweet", "Negative tweet"]
+    sentiments = [TextBlob(tweet).sentiment.polarity for tweet in tweets]
+    average_sentiment = sum(sentiments) / len(sentiments)
+    return average_sentiment
 
-def plot_stock_price(ticker):
-    data = yf.Ticker(ticker).history(period='1y')
-    plt.figure(figsize=(10,5))
-    plt.plot(data.index, data.Close)
-    plt.title('{ticker}Stock Price Over The Last Year')
-    plt.xlabel('Date')
-    plt.ylabel('Stock Price ($)')
-    plt.grid(True)
-    plt.savefig('stock_information.png')
+# Streamlit App
+st.title('Advanced Stock Market Analysis App')
 
+# User Input
+ticker = st.text_input('Enter Stock Ticker:', 'AAPL')
 
-functions = [
-    {
-        'name': 'get_stock_price',
-        'description': 'Retrieves the most updated stock price given the ticker symbol of a company.',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'Thr stock ticker symbol for a company (for example AAPL for APPLE).'
-                }
-            },
-            'required': ['ticker']
-        }
-    },
-        {
-        'name': 'calculate_SMA',
-        'description': 'Calculate the simple moving average for a given ticker and a window.',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'Thr stock ticker symbol for a company (for example AAPL for APPLE).'
-                },
-                "window":{
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the SMA"
-                }
-            },
-            'required': ["ticker", "window"],
-        }
-    },
+# Historical Data
+historical_data = yf.Ticker(ticker).history(period='1y')
 
-    {
-        'name': 'calculate_EMA',
-        'description': 'Calculate the exponential moving average for a given stock ticker and a window.',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'Thr stock ticker symbol for a company (for example AAPL for APPLE).'
-                },
-                "window":{
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the EMA"
-                }
-            },
-            'required': ["ticker", "window"],
-        }
-    },
+# Display Stock Price
+current_price = get_stock_price(ticker)
+st.write(f"Current Stock Price ({ticker}): ${current_price}")
 
-                {
-        'name': 'calculate_RSI',
-        'description': 'Calculate the RSI for a given stock ticker.',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'The stock ticker symbol for a company (for example AAPL for APPLE).'
-                },
-   
-            },
-            'required': ["ticker"],
-        }
-    },
+# Display Historical Data
+st.subheader(f'Historical Data ({ticker})')
+st.dataframe(historical_data.tail(10))
 
-            {
-        'name': 'calculate_MACD',
-        'description': 'Calculate the MACD for a given stock ticker',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'Thr stock ticker symbol for a company (for example AAPL for APPLE).'
-                },
-            },
-            'required': ["ticker"],
-        }
-    },
+# Technical Indicators
+st.subheader('Technical Indicators')
+sma_window = st.slider('Select SMA Window:', min_value=1, max_value=50, value=10)
+historical_data['SMA'] = calculate_sma(historical_data['Close'], sma_window)
+st.line_chart(historical_data[['Close', 'SMA']])
 
-                {
-        'name': 'plot_stock_price',
-        'description': 'Plot the stock price for the last year given the ticker symbol of a company',
-        'parameters' : {
-            'type': 'object',
-            'properties': {
-                'ticker':{
-                    'type': 'string',
-                    'description': 'Thr stock ticker symbol for a company (for example AAPL for APPLE).'
-                },
-            },
-            'required': ["ticker"],
-        }
-    },
-]
+ema_window = st.slider('Select EMA Window:', min_value=1, max_value=50, value=10)
+historical_data['EMA'] = calculate_ema(historical_data['Close'], ema_window)
+st.line_chart(historical_data[['Close', 'EMA']])
 
-available_functions = {
-    'get_stock_price': get_stock_price,
-    'calculateSMA': calculate_SMA,
-    'calculateEMA': calculate_EMA,
-    'calculateRSI': calculate_RSI,
-    'calculateMACD': calculate_MACD,
-    'calculateSMA': calculate_SMA,
-    'plot_stock_price': plot_stock_price
-}
+rsi_window = st.slider('Select RSI Window:', min_value=1, max_value=50, value=14)
+historical_data['RSI'] = calculate_rsi(historical_data['Close'], rsi_window)
+st.line_chart(historical_data['RSI'])
 
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
+# Sentiment Analysis
+st.subheader('Sentiment Analysis')
+sentiment_score = analyze_sentiment(ticker)
+st.write(f"Average Sentiment Score for {ticker}: {sentiment_score:.2f}")
 
-st.title('Automated Stock Analysis Assistant')
-user_input = st.text_input('Your input:')
-
-if user_input:
-    try:
-        st.session_state['messages'].append({'role': 'user', 'content': f'{user_input}'})
-        response = openai.ChatCompletion.create(
-            model = 'gpt-3.5 = turbo-0613',
-            messages = st.session_state['messages'],
-            function_call ='auto'
-        )
-
-        response_message = response['choices'][0]['message']
-
-        if response_message.get('function_call'):
-            function_name = response_message['function_call']['name']
-            function_args = json.loads(response_message['function_call']['arguments'])
-            if function_name in ['get_stock_price','calculate_RSI', 'calculate_MACD','plot_stock_price']:
-                args_dict = {'ticker': function_args.get('ticker')}
-            elif function_name in ['calculate_SMA', 'calculate_EMA']:
-                args_dict = {'ticker': function_args.get('ticker'), 'window': function_args.get('window')}
-            
-            function_to_call = available_functions[function_name]
-            function_response = function_to_call(**args_dict)
-
-            if function_name == 'plot_stock_price':
-                st.image('stock_analysis.png')
-            else:
-                st.session_state['messages'].append(response_message)
-                st.session_state['messages'].append(
-                    {
-                    'role': 'function',
-                    'name': 'function_name',
-                    'content': 'function_response'
-                    }
-                )
-                second_response = openai.ChatCompletion.create(
-                    model = 'gpt-3.5-turbo-0613',
-                    messages = st.session_state['messages']
-                )
-                st.text(second_response['choices'][0]['message']['content'])
-                st.session_state['messages'].append({'role': 'assistant', 'content': second_response['choices'][0]['message']['content']})
-        else: 
-            st.text(response_message['content'])
-            st.session_state['messages'].append({'role': 'assistant', 'content': response_message['content']})
-    except:
-        st.text('Try Again')
-        pass
+# Conclusion and Recommendations (Placeholder)
+st.subheader('Conclusion and Recommendations')
+st.write("Based on the analysis, it is recommended to...")
