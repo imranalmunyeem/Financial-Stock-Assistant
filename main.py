@@ -1,25 +1,26 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import yfinance as yf
 import streamlit as st
-from textblob import TextBlob
+import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
+from textblob import TextBlob
 
 # Function to get stock price
 def get_stock_price(ticker):
     return yf.Ticker(ticker).history(period='1d').iloc[-1].Close
 
-# Function to calculate simple moving average (SMA)
+# Function to calculate simple moving average
 def calculate_sma(data, window):
     return data.rolling(window=window).mean()
 
-# Function to calculate exponential moving average (EMA)
+# Function to calculate exponential moving average
 def calculate_ema(data, window):
     return data.ewm(span=window, adjust=False).mean()
 
 # Function to calculate relative strength index (RSI)
-def calculate_rsi(data, window=14):
-    delta = data.diff(1)
+def calculate_rsi(data, window):
+    delta = data.diff()
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
 
@@ -30,38 +31,53 @@ def calculate_rsi(data, window=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
-# Function to perform sentiment analysis on stock-related tweets
+# Function to analyze sentiment
 def analyze_sentiment(ticker):
-    tweets = ["Positive tweet about " + ticker, "Neutral tweet", "Negative tweet"]
-    sentiments = [TextBlob(tweet).sentiment.polarity for tweet in tweets]
-    average_sentiment = sum(sentiments) / len(sentiments)
-    return average_sentiment
+    return TextBlob(f"Recent news about {ticker} is positive.").sentiment.polarity
 
 # Function to recommend investment
 def recommend_investment(rsi, sentiment_score):
     if rsi < 30 and sentiment_score > 0:
-        return "Strong Buy"
-    elif rsi < 50 and sentiment_score > 0.5:
         return "Buy"
     elif rsi > 70 and sentiment_score < 0:
-        return "Strong Sell"
-    elif rsi > 50 and sentiment_score < -0.5:
         return "Sell"
     else:
         return "Hold"
 
 # Function to suggest investment amount
-def suggest_investment_amount(current_price, risk_percentage=5):
-    risk_amount = current_price * (risk_percentage / 100)
-    return risk_amount
+def suggest_investment_amount(current_price, risk_percentage):
+    return current_price * risk_percentage / 100
 
 # Function to calculate win and loss probability
 def calculate_win_loss_probability(sentiment_score):
-    win_probability = (sentiment_score + 1) / 2
+    win_probability = max(0, min(1, (sentiment_score + 1) / 2))
     loss_probability = 1 - win_probability
     return win_probability, loss_probability
 
 # Streamlit App
+st.set_page_config(
+    page_title="Stock Analysis App",
+    page_icon=":chart_with_upwards_trend:",
+    layout="wide",
+)
+
+# Background Color
+bg_color = "#2C3E50" 
+
+# Set Page Style
+st.markdown(
+    f"""
+    <style>
+        body {{
+            background-color: {bg_color};
+            color: white;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Header
 st.title('Advanced Stock Market Analysis App')
 
 # User Input
@@ -116,6 +132,3 @@ st.subheader('Win and Loss Probability')
 win_probability, loss_probability = calculate_win_loss_probability(sentiment_score)
 st.write(f"Win Probability: {win_probability:.2%}")
 st.write(f"Loss Probability: {loss_probability:.2%}")
-
-
-
