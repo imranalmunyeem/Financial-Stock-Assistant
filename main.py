@@ -1,10 +1,10 @@
 import yfinance as yf
 import streamlit as st
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from datetime import datetime, timedelta
-from textblob import TextBlob
+from pandas_datareader import data as pdr
 
 # Function to get stock price
 def get_stock_price(ticker):
@@ -33,7 +33,7 @@ def calculate_rsi(data, window):
 
 # Function to analyze sentiment
 def analyze_sentiment(ticker):
-    return TextBlob(f"Recent news about {ticker} is positive.").sentiment.polarity
+    return 0.2  # Placeholder, replace with sentiment analysis logic
 
 # Function to recommend investment
 def recommend_investment(rsi, sentiment_score):
@@ -54,6 +54,28 @@ def calculate_win_loss_probability(sentiment_score):
     loss_probability = 1 - win_probability
     return win_probability, loss_probability
 
+# Function to calculate Sharpe ratio
+def calculate_sharpe_ratio(data, risk_free_rate=0.02):
+    returns = data.pct_change().dropna()
+    excess_returns = returns - risk_free_rate
+    sharpe_ratio = (excess_returns.mean() / excess_returns.std()) * np.sqrt(252)
+    return sharpe_ratio
+
+# Function to calculate Sortino ratio
+def calculate_sortino_ratio(data, risk_free_rate=0.02):
+    returns = data.pct_change().dropna()
+    downside_returns = returns[returns < 0]
+    sortino_ratio = (returns.mean() - risk_free_rate) / downside_returns.std()
+    return sortino_ratio
+
+# Function to calculate Maximum Drawdown
+def calculate_max_drawdown(data):
+    cum_returns = (1 + data.pct_change()).cumprod()
+    peak = cum_returns.expanding(min_periods=1).max()
+    drawdown = (cum_returns - peak) / peak
+    max_drawdown = drawdown.min()
+    return max_drawdown
+
 # Streamlit App
 st.set_page_config(
     page_title="Stock Analysis App",
@@ -62,7 +84,7 @@ st.set_page_config(
 )
 
 # Background Color
-bg_color = "#2C3E50" 
+bg_color = "#2C3E50"
 
 # Set Page Style
 st.markdown(
@@ -126,6 +148,31 @@ st.subheader('Suggested Investment Amount')
 risk_percentage = st.slider('Select Risk Percentage:', min_value=1, max_value=10, value=5)
 investment_amount = suggest_investment_amount(current_price, risk_percentage)
 st.write(f"Suggested Investment Amount: ${investment_amount:.2f}")
+
+# Win and Loss Probability
+st.subheader('Win and Loss Probability')
+win_probability, loss_probability = calculate_win_loss_probability(sentiment_score)
+st.write(f"Win Probability: {win_probability:.2%}")
+st.write(f"Loss Probability: {loss_probability:.2%}")
+
+# Performance Metrics
+st.subheader('Performance Metrics')
+sharpe_ratio = calculate_sharpe_ratio(historical_data['Close'])
+sortino_ratio = calculate_sortino_ratio(historical_data['Close'])
+max_drawdown = calculate_max_drawdown(historical_data['Close'])
+st.write(f"Sharpe Ratio: {sharpe_ratio:.4f}")
+st.write(f"Sortino Ratio: {sortino_ratio:.4f}")
+st.write(f"Maximum Drawdown: {max_drawdown:.2%}")
+
+# Sentiment Analysis
+st.subheader('Sentiment Analysis')
+sentiment_score = analyze_sentiment(selected_ticker)
+st.write(f"Average Sentiment Score for {selected_ticker}: {sentiment_score:.2f}")
+
+# Investment Recommendations
+st.subheader('Investment Recommendations')
+investment_recommendation = recommend_investment(historical_data['RSI'].iloc[-1], sentiment_score)
+st.write(f"Recommendation: {investment_recommendation}")
 
 # Win and Loss Probability
 st.subheader('Win and Loss Probability')
