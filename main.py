@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 import streamlit as st
 from textblob import TextBlob
+import numpy as np
 
 # Function to get stock price
 def get_stock_price(ticker):
@@ -35,6 +36,30 @@ def analyze_sentiment(ticker):
     sentiments = [TextBlob(tweet).sentiment.polarity for tweet in tweets]
     average_sentiment = sum(sentiments) / len(sentiments)
     return average_sentiment
+
+# Function to recommend investment
+def recommend_investment(rsi, sentiment_score):
+    if rsi < 30 and sentiment_score > 0:
+        return "Strong Buy"
+    elif rsi < 50 and sentiment_score > 0.5:
+        return "Buy"
+    elif rsi > 70 and sentiment_score < 0:
+        return "Strong Sell"
+    elif rsi > 50 and sentiment_score < -0.5:
+        return "Sell"
+    else:
+        return "Hold"
+
+# Function to suggest investment amount
+def suggest_investment_amount(current_price, risk_percentage=5):
+    risk_amount = current_price * (risk_percentage / 100)
+    return risk_amount
+
+# Function to calculate win and loss probability
+def calculate_win_loss_probability(sentiment_score):
+    win_probability = (sentiment_score + 1) / 2
+    loss_probability = 1 - win_probability
+    return win_probability, loss_probability
 
 # Streamlit App
 st.title('Advanced Stock Market Analysis App')
@@ -72,6 +97,20 @@ st.subheader('Sentiment Analysis')
 sentiment_score = analyze_sentiment(selected_ticker)
 st.write(f"Average Sentiment Score for {selected_ticker}: {sentiment_score:.2f}")
 
-# Conclusion and Recommendations (Placeholder)
-st.subheader('Conclusion and Recommendations')
-st.write("Based on the analysis, it is recommended to...")
+# Investment Recommendations
+st.subheader('Investment Recommendations')
+investment_recommendation = recommend_investment(historical_data['RSI'].iloc[-1], sentiment_score)
+st.write(f"Recommendation: {investment_recommendation}")
+
+# Suggested Investment Amount
+st.subheader('Suggested Investment Amount')
+risk_percentage = st.slider('Select Risk Percentage:', min_value=1, max_value=10, value=5)
+investment_amount = suggest_investment_amount(current_price, risk_percentage)
+st.write(f"Suggested Investment Amount: ${investment_amount:.2f}")
+
+# Win and Loss Probability
+st.subheader('Win and Loss Probability')
+win_probability, loss_probability = calculate_win_loss_probability(sentiment_score)
+st.write(f"Win Probability: {win_probability:.2%}")
+st.write(f"Loss Probability: {loss_probability:.2%}")
+
