@@ -103,7 +103,7 @@ st.markdown(
 st.title('Advanced Stock Market Analysis App')
 
 # User Input
-selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'META', 'GOOGL', 'MSFT', 'X', 'IBM'])
+selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'META', 'GOOGL', 'MSFT', 'X', 'IBM', 'AMZN', 'TSLA', 'GOOGL', 'NFLX', 'BABA', 'JNJ', 'PG', 'JPM', 'GS', 'DIS', 'CSCO', 'GE'])
 
 # Historical Data
 historical_data = yf.Ticker(selected_ticker).history(period='5y')  
@@ -163,19 +163,3 @@ max_drawdown = calculate_max_drawdown(historical_data['Close'])
 st.write(f"Sharpe Ratio: {sharpe_ratio:.4f}")
 st.write(f"Sortino Ratio: {sortino_ratio:.4f}")
 st.write(f"Maximum Drawdown: {max_drawdown:.2%}")
-
-# Sentiment Analysis
-st.subheader('Sentiment Analysis')
-sentiment_score = analyze_sentiment(selected_ticker)
-st.write(f"Average Sentiment Score for {selected_ticker}: {sentiment_score:.2f}")
-
-# Investment Recommendations
-st.subheader('Investment Recommendations')
-investment_recommendation = recommend_investment(historical_data['RSI'].iloc[-1], sentiment_score)
-st.write(f"Recommendation: {investment_recommendation}")
-
-# Win and Loss Probability
-st.subheader('Win and Loss Probability')
-win_probability, loss_probability = calculate_win_loss_probability(sentiment_score)
-st.write(f"Win Probability: {win_probability:.2%}")
-st.write(f"Loss Probability: {loss_probability:.2%}")
