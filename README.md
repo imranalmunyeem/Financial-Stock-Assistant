@@ -9,7 +9,7 @@
         yfinance  
         pandas 
         matplotlib
-        steamlit
+        streamlit
 
 # How to install the required packages
-        pip install openai yfinance steamlit pandas matplotlib
+        pip install openai yfinance pandas matplotlib streamlit
