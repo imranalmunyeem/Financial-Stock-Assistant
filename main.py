@@ -31,7 +31,6 @@ def calculate_rsi(data, window=14):
 
 # Function to perform sentiment analysis on stock-related tweets
 def analyze_sentiment(ticker):
-    # Placeholder for demo purposes; replace with actual sentiment analysis logic
     tweets = ["Positive tweet about " + ticker, "Neutral tweet", "Negative tweet"]
     sentiments = [TextBlob(tweet).sentiment.polarity for tweet in tweets]
     average_sentiment = sum(sentiments) / len(sentiments)
@@ -41,17 +40,17 @@ def analyze_sentiment(ticker):
 st.title('Advanced Stock Market Analysis App')
 
 # User Input
-ticker = st.text_input('Enter Stock Ticker:', 'AAPL')
+selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'FB', 'GOOGL', 'MSFT', 'TWTR', 'IBM'])
 
 # Historical Data
-historical_data = yf.Ticker(ticker).history(period='1y')
+historical_data = yf.Ticker(selected_ticker).history(period='1y')
 
 # Display Stock Price
-current_price = get_stock_price(ticker)
-st.write(f"Current Stock Price ({ticker}): ${current_price}")
+current_price = get_stock_price(selected_ticker)
+st.write(f"Current Stock Price ({selected_ticker}): ${current_price}")
 
 # Display Historical Data
-st.subheader(f'Historical Data ({ticker})')
+st.subheader(f'Historical Data ({selected_ticker})')
 st.dataframe(historical_data.tail(10))
 
 # Technical Indicators
@@ -70,9 +69,10 @@ st.line_chart(historical_data['RSI'])
 
 # Sentiment Analysis
 st.subheader('Sentiment Analysis')
-sentiment_score = analyze_sentiment(ticker)
-st.write(f"Average Sentiment Score for {ticker}: {sentiment_score:.2f}")
+sentiment_score = analyze_sentiment(selected_ticker)
+st.write(f"Average Sentiment Score for {selected_ticker}: {sentiment_score:.2f}")
 
 # Conclusion and Recommendations (Placeholder)
 st.subheader('Conclusion and Recommendations')
 st.write("Based on the analysis, it is recommended to...")
+
