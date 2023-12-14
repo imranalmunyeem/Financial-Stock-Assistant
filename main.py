@@ -68,11 +68,14 @@ st.title('Advanced Stock Market Analysis App')
 selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'META', 'GOOGL', 'MSFT', 'X', 'IBM'])
 
 # Historical Data
-historical_data = yf.Ticker(selected_ticker).history(period='1y')
+historical_data = yf.Ticker(selected_ticker).history(period='5y')  
 
 # Display Stock Price
 current_price = get_stock_price(selected_ticker)
 st.write(f"Current Stock Price ({selected_ticker}): ${current_price}")
+
+# Display Data Duration
+st.write(f"Data Duration: {historical_data.index[0].strftime('%Y-%m-%d')} to {historical_data.index[-1].strftime('%Y-%m-%d')}")
 
 # Display Historical Data
 st.subheader(f'Historical Data ({selected_ticker})')
@@ -113,4 +116,6 @@ st.subheader('Win and Loss Probability')
 win_probability, loss_probability = calculate_win_loss_probability(sentiment_score)
 st.write(f"Win Probability: {win_probability:.2%}")
 st.write(f"Loss Probability: {loss_probability:.2%}")
+
+
 
