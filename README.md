@@ -2,7 +2,7 @@
 ### Description
         The Advanced Stock Market Analysis App is a comprehensive tool designed to empower users with advanced insights into stock market data for informed investment decisions.
         
-### Features: 
+### Features 
         Technical Indicators: SMA, EMA, RSI. Sentiment Analysis: Average sentiment score. 
         Investment Recommendations: Buy, Sell, Hold. 
         Suggested Investment Amount: Customizable based on risk percentage. 
