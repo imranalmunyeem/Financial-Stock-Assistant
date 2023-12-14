@@ -40,7 +40,7 @@ def analyze_sentiment(ticker):
 st.title('Advanced Stock Market Analysis App')
 
 # User Input
-selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'FB', 'GOOGL', 'MSFT', 'TWTR', 'IBM'])
+selected_ticker = st.selectbox('Select Stock Ticker:', ['AAPL', 'META', 'GOOGL', 'MSFT', 'X', 'IBM'])
 
 # Historical Data
 historical_data = yf.Ticker(selected_ticker).history(period='1y')
@@ -75,4 +75,3 @@ st.write(f"Average Sentiment Score for {selected_ticker}: {sentiment_score:.2f}"
 # Conclusion and Recommendations (Placeholder)
 st.subheader('Conclusion and Recommendations')
 st.write("Based on the analysis, it is recommended to...")
-
