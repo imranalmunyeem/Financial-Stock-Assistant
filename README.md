@@ -13,3 +13,6 @@
 
 # How to install the required packages
         pip install openai yfinance pandas matplotlib streamlit
+
+# How to run the program
+        Go to the program location -> Open cmd -> python -m streamlit run main.py
