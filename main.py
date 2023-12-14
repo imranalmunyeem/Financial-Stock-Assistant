@@ -76,6 +76,15 @@ def calculate_max_drawdown(data):
     max_drawdown = drawdown.min()
     return max_drawdown
 
+# Function to suggest investment based on financial condition
+def suggest_investment_based_on_financial_condition(financial_condition):
+    if financial_condition == "Excellent":
+        return "Based on your excellent financial condition, we suggest investing in well-established companies with a low-risk profile."
+    elif financial_condition == "Moderate":
+        return "Based on your moderate financial condition, consider a diversified portfolio with a mix of growth and value stocks."
+    elif financial_condition == "Poor":
+        return "Considering your financial condition, focus on risk management and consider conservative investment strategies."
+
 # Streamlit App
 st.set_page_config(
     page_title="Stock Analysis App",
@@ -163,3 +172,11 @@ max_drawdown = calculate_max_drawdown(historical_data['Close'])
 st.write(f"Sharpe Ratio: {sharpe_ratio:.4f}")
 st.write(f"Sortino Ratio: {sortino_ratio:.4f}")
 st.write(f"Maximum Drawdown: {max_drawdown:.2%}")
+
+# Financial Condition Input
+st.subheader('Financial Condition Input')
+financial_condition = st.selectbox('Select Your Financial Condition:', ['Excellent', 'Moderate', 'Poor'])
+
+# Suggest Investment Based on Financial Condition
+investment_suggestion = suggest_investment_based_on_financial_condition(financial_condition)
+st.write(f"Investment Suggestion: {investment_suggestion}")
