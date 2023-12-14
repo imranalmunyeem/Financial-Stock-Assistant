@@ -33,7 +33,7 @@ def calculate_rsi(data, window):
 
 # Function to analyze sentiment
 def analyze_sentiment(ticker):
-    return 0.2  # Placeholder, replace with sentiment analysis logic
+    return 0.2  
 
 # Function to recommend investment
 def recommend_investment(rsi, sentiment_score):
