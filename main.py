@@ -180,3 +180,5 @@ financial_condition = st.selectbox('Select Your Financial Condition:', ['Excelle
 # Suggest Investment Based on Financial Condition
 investment_suggestion = suggest_investment_based_on_financial_condition(financial_condition)
 st.write(f"Investment Suggestion: {investment_suggestion}")
+
+st.write("Developed by Imran Al Munyeem")
