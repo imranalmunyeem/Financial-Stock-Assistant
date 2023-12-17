@@ -25,6 +25,10 @@
 ### How to run the program
         Go to the program location -> Open cmd -> python -m streamlit run main.py
 
+### Host on streamlit
+        Step 1: pip install pipreqs
+        Step 2: pipreqs --encoding=utf8
+
 ### Explanation of Functions and Code
 #####   Data Retrieval Functions:
         get_stock_price(ticker): Fetches the current stock price.
